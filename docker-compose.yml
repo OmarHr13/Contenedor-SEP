@@ -1,0 +1,62 @@
+#EN ESTE ARCHIVO SE CONFIGURAN LAS IMAGENES Y CONTENEDORES DE CARPETA completo
+
+version: "3.8"
+services:
+  
+
+#Contenedor Node:18 con angular
+  node:
+    image: node:18
+    container_name: node
+    working_dir: /app
+    volumes:
+      - /home/root-agp/completo:/app
+    ports:
+      - "4200:4200"
+    restart: always
+    command: bash -c "npm install -g @angular/cli && ng new nodeagp_dc && cd nodeagp_dc && ng serve --host 0.0.0.0"
+
+#Contenedor Python con django
+  python_agp:
+    image: python
+    container_name: python
+    working_dir: /app
+    volumes:
+      - /home/root-agp/completo:/app
+    ports:
+      - "8002:8000"
+    restart: always
+    command: bash -c 'if [ ! -d "django" ]; then mkdir django; fi && cd django && python -m venv entorno_dc && source entorno_dc/bin/activate && pip install --upgrade pip && pip install django && if [ ! -d "misitiodc" ]; then django-admin startproject misitiodc .; fi && python manage.py runserver 0.0.0.0:8000'
+
+  
+#Contendor Postgres:14
+#Contenedor de PGADMIN para manejo de base de datos  
+    #Contenedor Postgres:14 con PostGIS
+  db:
+    image: postgis/postgis:14-3.2
+    container_name: postgres_with_postgis
+    restart: always
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - /home/root-agp/completo/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  #Contenedor PGADMIN
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
